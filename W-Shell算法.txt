@@ -1,0 +1,192 @@
+package 安全编程;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
+
+public class FileOperation {
+	public static void main(String[] args) throws IOException {
+		String fileName = "C:/Users/Administrator/Desktop/email_1133_5451.txt";	
+		ArrayList<Integer[]> mylist = readFile(fileName);
+
+		
+		HashMap<Integer, HashSet<Integer>> relation_map 
+		= build_relationship(mylist);
+		
+		HashMap<Integer, Integer> ourMap= new HashMap();
+		
+		// Degree(relation_map);
+		delete(relation_map,ourMap);
+		Degree(relation_map);
+	}
+	
+	
+	/*private static void visit_net(HashMap<Integer, HashSet<Integer>> relation_map,
+			HashSet<Integer> visited_set, Integer id) {
+		if(!visited_set.contains(id)) {
+			visited_set.add(id);
+			HashSet<Integer> tmpSet = relation_map.get(id);
+			Iterator<Integer> it = tmpSet.iterator();
+			Integer tmp_id = 0;
+			while(it.hasNext()) {
+				tmp_id = it.next();
+				visit_net(relation_map,visited_set, tmp_id);
+			}
+		}
+	} 
+	private static boolean is_connected(HashMap<Integer, HashSet<Integer>> relation_map,
+			Integer id1, Integer id2) {
+		return relation_map.get(id1).contains(id2);
+	} */
+	public static void visit_set(HashSet<Integer> myset) {
+		Iterator<Integer> it = myset.iterator();
+		Integer  a=0;
+		Integer id = 0;
+		while(it.hasNext()) {
+			id = it.next();
+			System.out.print(id + " ");
+			a++;
+		}
+		System.out.println();
+	}
+	
+	private static HashMap<Integer, HashSet<Integer>> 
+	                      build_relationship(ArrayList<Integer[]> mylist){
+		HashMap<Integer, HashSet<Integer>> relation_map = 
+				new HashMap<Integer, HashSet<Integer>>();
+		Integer[] myArray = null;
+		HashSet<Integer> myset = null;
+		Integer id1 = 0;
+		Integer id2 = 0;
+		for(int i = 0; i < mylist.size(); i ++) {
+			myArray = mylist.get(i);
+			id1 = myArray[0];
+			id2 = myArray[1];
+			insert_value( relation_map,  id1,  id2);
+			insert_value( relation_map,  id2,  id1);			
+		}
+		return relation_map;
+	}
+	private static void insert_value(HashMap<Integer, HashSet<Integer>> relation_map,
+			Integer id1, Integer id2) {
+		HashSet<Integer> myset = null;
+		if(!relation_map.containsKey(id1)) {
+			myset = new HashSet<Integer>();
+			myset.add(id2);
+			relation_map.put(id1, myset);					
+		}else {
+			//relation_map.get(id1).add(id2);
+			myset = relation_map.get(id1);
+			myset.add(id2);
+		}
+		
+	}
+	
+
+	public static ArrayList<Integer[]> readFile(String fileName) throws IOException {
+		File file = new File(fileName);
+		BufferedReader reader = null;
+		reader = new BufferedReader(new FileReader(file));
+
+		ArrayList<Integer[]> mylist = new ArrayList<Integer[]>();
+		
+		String tempString = null;
+		String[] strArray = null;
+		Integer[] integerArray = null;
+		while ((tempString = reader.readLine()) != null) {
+			strArray = tempString.split(",");
+//			System.out.println(strArray[0] + ":" +strArray[1] );
+			integerArray = stringArrayToIntegerArray(strArray);
+			
+			//System.out.println(integerArray[0] + ":" +integerArray[1] );
+			mylist.add(integerArray);
+		}
+
+		reader.close();
+		return mylist;
+	}
+	
+	private static Integer[] 
+			stringArrayToIntegerArray(String[] strArray) {
+		Integer node1 = Integer.parseInt(strArray[0]);
+		Integer node2 = Integer.parseInt(strArray[1]);
+		Integer[] intArray = {node1, node2};
+		return intArray;
+	}
+
+public static void Degree(HashMap<Integer, HashSet<Integer>> map)   {
+ HashMap<Integer, Integer> Degree_map = new HashMap<>();
+ HashMap<Integer, HashSet<Integer>> value_map = new HashMap<>();
+   for(int i = 1; i <= map.size(); i ++) {
+	Degree_map.put(i, map.get(i).size() );
+}
+   for(int i = 1; i <= map.size(); i ++) {
+		value_map.put(i, map.get(i));
+	}
+Integer key = null;
+Iterator<Integer> it = Degree_map.keySet().iterator();
+while(it.hasNext()) {
+	key = it.next();
+	System.out.println(key + "," + Degree_map.get(key));
+	visit_set(value_map.get(key));
+}
+}
+public static void iscontain(HashMap<Integer,HashSet<Integer>> myMap, Integer node) {
+	 int node3;
+	 HashSet<Integer> mySet = new HashSet<Integer>();
+	 for (Integer keys1 : myMap.keySet()) {
+		 if(myMap.get(keys1).contains(node)) {
+			 mySet.add(keys1);
+	 }
+	 }
+	 Iterator it = mySet.iterator();
+	 while(it.hasNext()) {
+		 node3 = (Integer)it.next();
+		 myMap.get(node3).remove(node);
+	 }
+}
+
+public static void delete(HashMap<Integer,HashSet<Integer>> myMap,
+		HashMap<Integer, Integer> ourMap) {
+	 int min, node2;
+	 int  node, values;
+	 HashSet<Integer> ourSet = new HashSet<Integer>();
+	 while(myMap.size() != 0) {
+		 min = 99999;
+		 for (Integer keys : myMap.keySet()) {
+			 min = myMap.get(keys).size()>min?min:myMap.get(keys).size();
+	 }
+		 for (Integer keys1 : myMap.keySet()) {
+			 values = myMap.get(keys1).size();
+			 if(min == values) {
+				 node = keys1;
+				 ourSet.add(keys1);
+				 ourMap.put(node, min);
+			 }
+		 }
+		 Iterator it = ourSet.iterator();
+		 while(it.hasNext()) {
+			 node2 = (Integer)it.next();
+			 myMap.remove(node2);
+			 iscontain(myMap,node2);
+		 }
+	}
+}
+
+}
+
+
+//1.首先读取本地文件，使用readfile方法将本地txt文件的数据存入到arraylist中。
+2.将得到的数据存入到哈希map内，以上两步即将本地数据整理完成。
+3.定义visit_set类，来获取一个key值的所有value值，使用迭代器，遍历整个hashmap，并输出。
+4.在将数据存入到hashmap时，使用了两个方法。首先insert_value，当存在key值时，那么直接添加value值即可，当没有输入的key值时，那么在hashmap中新增记录。再使用build_relationship方法建立关系表。
+5.从本次读取文本的readfile方法，主要使用bufferedreader。此处注意关闭输入流。
+6.Degree方法，获取key的度数并打印度数以及各value。
+7.上述将数据完全整理完成，并能够打印出各关键数据。接下来实现课程设计要求算法。Delete方法，因为删除为从最小度开始删除，那么遍历，寻找最小。其次，寻找到的最小度只有一个对象，那么需要再次遍历，找出相同最小度的key值，并将他们存放进自建的hashmap中保存并在原来的表中删除相应数据。
+8.删除数据时，例如删除key值为1，value为2的一组数据，我们还需要同时删除key为2，value为1的数据，定义iscontain方法来实现次目
